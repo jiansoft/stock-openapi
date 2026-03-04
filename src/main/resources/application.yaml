@@ -1,0 +1,34 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: stock_api
+  jackson:
+    default-property-inclusion: NON_NULL
+    time-zone: Asia/Taipei
+
+logging:
+  file:
+    path: logs
+
+server:
+  port: 7000
+  forward-headers-strategy: framework
+
+springdoc:
+  api-docs:
+    path: /swagger/v1/swagger.json
+  swagger-ui:
+    path: /swagger/index.html
+    url: /swagger/v1/swagger.json
+
+app:
+  database:
+    connection: ${APP_DATABASE_CONNECTION:server=127.0.0.1;port=5432;uid=postgres;pwd=postgres;database=stock;}
+    maximum-pool-size: 5
+    initialization-fail-timeout: -1
+  grpc:
+    host: jiansoft.ddns.net
+    port: 9001
+    use-tls: true
+    trust-all-certificates: true

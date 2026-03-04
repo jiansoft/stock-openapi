@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!.dockerignore
+!build/
+!build/libs/
+!build/libs/stock_api.jar
+!stock_api.jar

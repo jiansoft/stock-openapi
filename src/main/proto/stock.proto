@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package stock;
+
+option java_package = "com.jiansoft.stock_api.grpc";
+option java_multiple_files = true;
+option java_outer_classname = "StockProto";
+
+service Stock {
+  rpc UpdateStockInfo (StockInfoRequest) returns (StockInfoReply) {}
+  rpc FetchCurrentStockQuotes (StockQuotesRequest) returns (StockQuotesReply) {}
+  rpc FetchHolidaySchedule (HolidayScheduleRequest) returns (HolidayScheduleReply) {}
+}
+
+message StockInfoRequest {
+  string stock_symbol = 1;
+  string name = 2;
+  int32 stock_exchange_market_id = 3;
+  int32 stock_industry_id = 4;
+  double net_asset_value_per_share = 5;
+  bool suspend_listing = 6;
+}
+
+message StockInfoReply {
+  string message = 1;
+}
+
+message StockQuotes {
+  string stock_symbol = 1;
+  double price = 2;
+  double change = 3;
+  double change_range = 4;
+}
+
+message StockQuotesRequest {
+  repeated string stock_symbols = 1;
+}
+
+message StockQuotesReply {
+  repeated StockQuotes stock_prices = 1;
+}
+
+message HolidayScheduleRequest {
+  int32 year = 1;
+}
+
+message HolidaySchedule {
+  string date = 1;
+  string why = 2;
+}
+
+message HolidayScheduleReply {
+  repeated HolidaySchedule holiday = 1;
+}

@@ -1,0 +1,15 @@
+services:
+  stock_api:
+    container_name: stock_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        JAR_FILE: build/libs/stock_api.jar
+    env_file:
+      - .env
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped

@@ -1,0 +1,10 @@
+app:
+  database:
+    connection: "jdbc:h2:mem:stock;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;USER=sa;PASSWORD="
+    maximum-pool-size: 2
+    initialization-fail-timeout: 1
+  grpc:
+    host: localhost
+    port: 9001
+    use-tls: false
+    trust-all-certificates: false
