@@ -2,6 +2,7 @@ package com.jiansoft.stock_api.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -24,4 +25,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
             .allowedMethods("*")
             .allowedHeaders("*");
     }
+
+    /**
+     * 設定 Swagger 自訂入口頁。
+     *
+     * @param registry ViewController 設定登錄器
+     */
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/swagger").setViewName("forward:/swagger/index.html");
+        registry.addViewController("/swagger/").setViewName("forward:/swagger/index.html");
+    }
+
 }

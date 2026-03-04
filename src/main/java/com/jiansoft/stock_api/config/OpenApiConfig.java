@@ -30,7 +30,7 @@ public class OpenApiConfig {
                 .contact(new Contact()
                     .name("jIAn")
                     .email("eddiea.chen@gmail.com")
-                    .url("https://github.com/jiansoft/stock_api")
+                    .url("https://github.com/jiansoft/stock-openapi")
                 )
             );
     }
