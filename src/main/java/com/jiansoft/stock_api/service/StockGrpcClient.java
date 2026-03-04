@@ -12,6 +12,7 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import jakarta.annotation.PreDestroy;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 public class StockGrpcClient {
 
     private final GrpcProperties grpcProperties;
+    private final ReentrantLock lock = new ReentrantLock();
     private volatile ManagedChannel channel;
     private volatile StockGrpc.StockBlockingStub stockBlockingStub;
 
@@ -69,13 +71,16 @@ public class StockGrpcClient {
             return currentStub;
         }
 
-        synchronized (this) {
+        lock.lock();
+        try {
             if (stockBlockingStub == null) {
                 channel = createChannel();
                 stockBlockingStub = StockGrpc.newBlockingStub(channel);
             }
 
             return stockBlockingStub;
+        } finally {
+            lock.unlock();
         }
     }
 

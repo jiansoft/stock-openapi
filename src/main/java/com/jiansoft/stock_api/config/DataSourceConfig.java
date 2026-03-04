@@ -106,13 +106,10 @@ public class DataSourceConfig {
     }
 
     private String inferDriverClassName(String connection) {
-        if (connection.startsWith("jdbc:h2:")) {
-            return "org.h2.Driver";
-        }
-        if (connection.startsWith("jdbc:postgresql:")) {
-            return "org.postgresql.Driver";
-        }
-
-        return null;
+        return switch (connection) {
+            case String c when c.startsWith("jdbc:h2:") -> "org.h2.Driver";
+            case String c when c.startsWith("jdbc:postgresql:") -> "org.postgresql.Driver";
+            default -> null;
+        };
     }
 }

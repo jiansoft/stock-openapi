@@ -2,7 +2,7 @@
 <Configuration status="WARN" monitorInterval="60">
     <Properties>
         <Property name="applicationName">${spring:spring.application.name:-stock_api}</Property>
-        <Property name="logDirectory">${spring:logging.file.path:-logs}</Property>
+        <Property name="logDirectory">${spring:logging.file.path:-${sys:LOG_DIR:-logs}}</Property>
         <Property name="logPattern">%d{yyyy-MM-dd HH:mm:ss.SSS XXX} %-5level [%t] %c{1.} - %msg%n%throwable</Property>
     </Properties>
 
