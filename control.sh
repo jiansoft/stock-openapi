@@ -3,8 +3,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-IMAGE_NAME="${IMAGE_NAME:-stock-api-image}"
-CONTAINER_NAME="${CONTAINER_NAME:-stock_api}"
+IMAGE_NAME="${IMAGE_NAME:-stock-java-image}"
+CONTAINER_NAME="${CONTAINER_NAME:-stock-java-container}"
 HOST_PORT="${HOST_PORT:-7000}"
 LOG_DIR="${LOG_DIR:-${SCRIPT_DIR}/logs}"
 

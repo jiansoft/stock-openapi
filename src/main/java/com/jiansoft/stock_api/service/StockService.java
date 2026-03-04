@@ -10,7 +10,7 @@ import com.jiansoft.stock_api.dto.stock.DividendDto;
 import com.jiansoft.stock_api.dto.stock.HolidayScheduleDto;
 import com.jiansoft.stock_api.dto.stock.IndustryDto;
 import com.jiansoft.stock_api.dto.stock.RevenueDto;
-import com.jiansoft.stock_api.repository.StockRepository;
+import com.jiansoft.stock_api.provider.StocksDataProvider;
 import com.jiansoft.stock_api.support.PaginationRequest;
 import java.time.LocalDate;
 import java.util.List;
@@ -29,12 +29,10 @@ public class StockService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
 
-    private final StockRepository stockRepository;
-    private final StockGrpcClient stockGrpcClient;
+    private final StocksDataProvider stocksDataProvider;
 
-    public StockService(StockRepository stockRepository, StockGrpcClient stockGrpcClient) {
-        this.stockRepository = stockRepository;
-        this.stockGrpcClient = stockGrpcClient;
+    public StockService(StocksDataProvider stocksDataProvider) {
+        this.stocksDataProvider = stocksDataProvider;
     }
 
     /**
@@ -51,7 +49,7 @@ public class StockService {
             recordsPerPage
         );
         var paginationRequest = PaginationRequest.of(requestedPage, recordsPerPage);
-        var result = stockRepository.findDetails(paginationRequest);
+        var result = stocksDataProvider.getDetails(paginationRequest);
 
         return new ApiResponse<>(
             HttpStatus.OK.value(),
@@ -67,7 +65,7 @@ public class StockService {
     public ApiResponse<Payload<List<IndustryDto>>> getIndustries() {
         return new ApiResponse<>(
             HttpStatus.OK.value(),
-            new Payload<>(stockRepository.findIndustries())
+            new Payload<>(stocksDataProvider.getIndustries())
         );
     }
 
@@ -80,7 +78,7 @@ public class StockService {
     public ApiResponse<Payload<List<DividendDto>>> getDividend(String stockSymbol) {
         return new ApiResponse<>(
             HttpStatus.OK.value(),
-            new Payload<>(stockRepository.findDividend(stockSymbol))
+            new Payload<>(stocksDataProvider.getDividend(stockSymbol))
         );
     }
 
@@ -96,12 +94,12 @@ public class StockService {
         Integer recordsPerPage
     ) {
         var paginationRequest = PaginationRequest.of(requestedPage, recordsPerPage);
-        var result = stockRepository.findLastDailyQuote(paginationRequest);
+        var result = stocksDataProvider.getLastDailyQuote(paginationRequest);
 
         return new ApiResponse<>(
             HttpStatus.OK.value(),
             new LastDailyQuotePayload<>(
-                stockRepository.findLastClosingDay(),
+                stocksDataProvider.getLastClosingDay(),
                 result.meta(),
                 result.data()
             )
@@ -122,7 +120,7 @@ public class StockService {
         Integer recordsPerPage
     ) {
         var paginationRequest = PaginationRequest.of(requestedPage, recordsPerPage);
-        var result = stockRepository.findHistoricalDailyQuote(date, paginationRequest);
+        var result = stocksDataProvider.getHistoricalDailyQuote(date, paginationRequest);
 
         return new ApiResponse<>(
             HttpStatus.OK.value(),
@@ -144,7 +142,7 @@ public class StockService {
         Integer recordsPerPage
     ) {
         var paginationRequest = PaginationRequest.of(requestedPage, recordsPerPage);
-        var result = stockRepository.findRevenue(null, monthOfYear, paginationRequest);
+        var result = stocksDataProvider.getRevenueByMonth(monthOfYear, paginationRequest);
 
         return new ApiResponse<>(
             HttpStatus.OK.value(),
@@ -166,7 +164,7 @@ public class StockService {
         Integer recordsPerPage
     ) {
         var paginationRequest = PaginationRequest.of(requestedPage, recordsPerPage);
-        var result = stockRepository.findRevenue(stockSymbol, null, paginationRequest);
+        var result = stocksDataProvider.getRevenueByStock(stockSymbol, paginationRequest);
 
         return new ApiResponse<>(
             HttpStatus.OK.value(),
@@ -185,7 +183,7 @@ public class StockService {
 
         return new ApiResponse<>(
             HttpStatus.OK.value(),
-            new Payload<>(stockGrpcClient.fetchHolidaySchedule(year))
+            new Payload<>(stocksDataProvider.getHolidaySchedule(year))
         );
     }
 }

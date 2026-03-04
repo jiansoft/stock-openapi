@@ -3,7 +3,7 @@ package com.jiansoft.stock_api.service;
 import com.jiansoft.stock_api.dto.common.ApiResponse;
 import com.jiansoft.stock_api.dto.common.PagingPayload;
 import com.jiansoft.stock_api.dto.twse.TaiexDto;
-import com.jiansoft.stock_api.repository.TwseRepository;
+import com.jiansoft.stock_api.provider.TwseDataProvider;
 import com.jiansoft.stock_api.support.PaginationRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -14,10 +14,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class TwseService {
 
-    private final TwseRepository twseRepository;
+    private final TwseDataProvider twseDataProvider;
 
-    public TwseService(TwseRepository twseRepository) {
-        this.twseRepository = twseRepository;
+    public TwseService(TwseDataProvider twseDataProvider) {
+        this.twseDataProvider = twseDataProvider;
     }
 
     /**
@@ -29,7 +29,7 @@ public class TwseService {
      */
     public ApiResponse<PagingPayload<TaiexDto>> getTaiex(Integer requestedPage, Integer recordsPerPage) {
         var paginationRequest = PaginationRequest.of(requestedPage, recordsPerPage);
-        var result = twseRepository.findTaiex(paginationRequest);
+        var result = twseDataProvider.getTaiex(paginationRequest);
 
         return new ApiResponse<>(
             HttpStatus.OK.value(),
