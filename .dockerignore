@@ -1,6 +1,7 @@
 *
 !Dockerfile
 !.dockerignore
+!.env
 !build/
 !build/libs/
 !build/libs/stock_api.jar

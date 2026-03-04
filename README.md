@@ -58,6 +58,7 @@ APP_DATABASE_CONNECTION=server=127.0.0.1;port=5432;uid=Qoo;pwd=Qoo;database=stoc
 ## Docker
 
 專案已提供 `Dockerfile`，會直接使用已編譯完成的 `jar` 建立映像檔，不會在 Docker 內重新編譯。
+建置時也會一併將專案根目錄的 `.env` 複製進容器內 `/app/.env`，讓 Spring Boot 在容器內可直接讀取。
 
 在專案目錄內先完成：
 
@@ -83,6 +84,12 @@ docker build --build-arg JAR_FILE=stock_api.jar -t stock_api:latest .
 docker run -d -p 7000:7000 --env-file .env --name stock_api stock_api:latest
 ```
 
+若映像檔是在含有 `.env` 的目錄內建出來，因為 `.env` 已包進 image，單純啟動也可使用：
+
+```bash
+docker run -d -p 7000:7000 --name stock_api stock_api:latest
+```
+
 若要直接用 Compose 啟動，專案也提供 `docker-compose.yml`：
 
 ```bash
@@ -102,6 +109,7 @@ Compose 會：
 chmod +x control.sh
 ./control.sh docker_build
 ./control.sh docker_start
+./control.sh docker_update
 ```
 
 支援指令：
@@ -110,6 +118,7 @@ chmod +x control.sh
 - `./control.sh docker_stop`
 - `./control.sh docker_start`
 - `./control.sh docker_restart`
+- `./control.sh docker_update`
 
 可透過環境變數覆寫：
 
@@ -117,6 +126,12 @@ chmod +x control.sh
 - `CONTAINER_NAME`
 - `HOST_PORT`
 - `LOG_DIR`
+
+`docker_update` 會先重新建置 image，再依容器狀態處理：
+
+- 若容器正在執行，先停止再重新啟動
+- 若容器未執行但殘留舊容器，先清掉再啟動
+- 若容器不存在，直接啟動
 
 ## Swagger / OpenAPI
 
