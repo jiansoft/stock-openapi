@@ -4,10 +4,9 @@
 
 ## 專案資訊
 
-- 原始 C# 專案：<https://github.com/jiansoft/stock_api>
 - 相關資料服務：<https://github.com/jiansoft/stock_crawler>
 - UI Demo：<https://jiansoft.mooo.com/stock/revenues>
-- 原始 API Demo：<https://jiansoft.freeddns.org/swagger>
+- API Demo：<https://jiansoft.freeddns.org/swagger>
 
 ## 技術棧
 
