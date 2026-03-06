@@ -23,14 +23,10 @@ public record Meta(int currentPage, int recordsPerPage, int totalPages, long tot
      */
     public static Meta from(long totalRecords, PaginationRequest paginationRequest) {
         int pageSize = paginationRequest.recordsPerPage();
-        int totalPages = totalRecords > 0 ? (int) Math.ceil(totalRecords / (double) pageSize) : 0;
-        int currentPage = Math.max(DEFAULT_PAGE, paginationRequest.requestedPage());
-
-        if (totalPages > 0) {
-            currentPage = Math.min(currentPage, totalPages);
-        } else {
-            currentPage = DEFAULT_PAGE;
-        }
+        int totalPages = toTotalPages(totalRecords, pageSize);
+        int currentPage = totalPages > 0
+            ? Math.clamp(paginationRequest.requestedPage(), DEFAULT_PAGE, totalPages)
+            : DEFAULT_PAGE;
 
         return new Meta(currentPage, pageSize, totalPages, totalRecords);
     }
@@ -41,7 +37,8 @@ public record Meta(int currentPage, int recordsPerPage, int totalPages, long tot
      * @return 分頁 offset
      */
     public int offset() {
-        return (currentPage - 1) * recordsPerPage;
+        long rawOffset = ((long) currentPage - 1L) * recordsPerPage;
+        return Math.clamp(rawOffset, 0, Integer.MAX_VALUE);
     }
 
     /**
@@ -51,5 +48,14 @@ public record Meta(int currentPage, int recordsPerPage, int totalPages, long tot
      */
     public int pageSize() {
         return recordsPerPage;
+    }
+
+    private static int toTotalPages(long totalRecords, int pageSize) {
+        if (totalRecords <= 0) {
+            return 0;
+        }
+
+        long totalPages = Math.ceilDiv(totalRecords, (long) pageSize);
+        return Math.clamp(totalPages, 0, Integer.MAX_VALUE);
     }
 }

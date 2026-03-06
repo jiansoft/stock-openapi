@@ -25,11 +25,9 @@ public record PaginationRequest(int requestedPage, int recordsPerPage) {
         int normalizedPage = requestedPage == null || requestedPage <= 0
             ? DEFAULT_PAGE
             : requestedPage;
-        int normalizedRecordsPerPage = recordsPerPage == null
-            || recordsPerPage <= 0
-            || recordsPerPage > MAXIMUM_RECORDS_PER_PAGE
+        int normalizedRecordsPerPage = recordsPerPage == null || recordsPerPage <= 0
             ? DEFAULT_RECORDS_PER_PAGE
-            : recordsPerPage;
+            : Math.clamp(recordsPerPage.longValue(), 1, MAXIMUM_RECORDS_PER_PAGE);
 
         return new PaginationRequest(normalizedPage, normalizedRecordsPerPage);
     }

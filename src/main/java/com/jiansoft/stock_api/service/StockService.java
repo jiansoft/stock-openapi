@@ -13,10 +13,13 @@ import com.jiansoft.stock_api.dto.stock.RevenueDto;
 import com.jiansoft.stock_api.provider.StocksDataProvider;
 import com.jiansoft.stock_api.support.PaginationRequest;
 import java.time.LocalDate;
+import java.util.Locale;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.StringUtils;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,6 +31,11 @@ import org.springframework.stereotype.Service;
 public class StockService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockService.class);
+    private static final int HTTP_OK = HttpStatus.OK.value();
+    private static final int MIN_QUERY_YEAR = 1900;
+    private static final int MAX_QUERY_YEAR = 2100;
+    private static final LocalDate MIN_HISTORY_DATE = LocalDate.of(MIN_QUERY_YEAR, 1, 1);
+    private static final Pattern STOCK_SYMBOL_PATTERN = Pattern.compile("^[0-9A-Za-z]{1,12}$");
 
     private final StocksDataProvider stocksDataProvider;
 
@@ -52,7 +60,7 @@ public class StockService {
         var result = stocksDataProvider.getDetails(paginationRequest);
 
         return new ApiResponse<>(
-            HttpStatus.OK.value(),
+            HTTP_OK,
             new PagingPayload<>(result.meta(), result.data())
         );
     }
@@ -64,7 +72,7 @@ public class StockService {
      */
     public ApiResponse<Payload<List<IndustryDto>>> getIndustries() {
         return new ApiResponse<>(
-            HttpStatus.OK.value(),
+            HTTP_OK,
             new Payload<>(stocksDataProvider.getIndustries())
         );
     }
@@ -76,9 +84,11 @@ public class StockService {
      * @return 股利資料回應
      */
     public ApiResponse<Payload<List<DividendDto>>> getDividend(String stockSymbol) {
+        String normalizedStockSymbol = normalizeStockSymbol(stockSymbol);
+
         return new ApiResponse<>(
-            HttpStatus.OK.value(),
-            new Payload<>(stocksDataProvider.getDividend(stockSymbol))
+            HTTP_OK,
+            new Payload<>(stocksDataProvider.getDividend(normalizedStockSymbol))
         );
     }
 
@@ -97,7 +107,7 @@ public class StockService {
         var result = stocksDataProvider.getLastDailyQuote(paginationRequest);
 
         return new ApiResponse<>(
-            HttpStatus.OK.value(),
+            HTTP_OK,
             new LastDailyQuotePayload<>(
                 stocksDataProvider.getLastClosingDay(),
                 result.meta(),
@@ -119,11 +129,12 @@ public class StockService {
         Integer requestedPage,
         Integer recordsPerPage
     ) {
+        validateHistoricalDate(date);
         var paginationRequest = PaginationRequest.of(requestedPage, recordsPerPage);
         var result = stocksDataProvider.getHistoricalDailyQuote(date, paginationRequest);
 
         return new ApiResponse<>(
-            HttpStatus.OK.value(),
+            HTTP_OK,
             new PagingPayload<>(result.meta(), result.data())
         );
     }
@@ -141,11 +152,12 @@ public class StockService {
         Integer requestedPage,
         Integer recordsPerPage
     ) {
+        validateMonthOfYear(monthOfYear);
         var paginationRequest = PaginationRequest.of(requestedPage, recordsPerPage);
         var result = stocksDataProvider.getRevenueByMonth(monthOfYear, paginationRequest);
 
         return new ApiResponse<>(
-            HttpStatus.OK.value(),
+            HTTP_OK,
             new PagingPayload<>(result.meta(), result.data())
         );
     }
@@ -163,11 +175,12 @@ public class StockService {
         Integer requestedPage,
         Integer recordsPerPage
     ) {
+        String normalizedStockSymbol = normalizeStockSymbol(stockSymbol);
         var paginationRequest = PaginationRequest.of(requestedPage, recordsPerPage);
-        var result = stocksDataProvider.getRevenueByStock(stockSymbol, paginationRequest);
+        var result = stocksDataProvider.getRevenueByStock(normalizedStockSymbol, paginationRequest);
 
         return new ApiResponse<>(
-            HttpStatus.OK.value(),
+            HTTP_OK,
             new PagingPayload<>(result.meta(), result.data())
         );
     }
@@ -179,11 +192,51 @@ public class StockService {
      * @return 休市日資料回應
      */
     public ApiResponse<Payload<List<HolidayScheduleDto>>> getHolidaySchedule(int year) {
+        validateYear(year);
         logger.info("查詢 {} 年休市日資料", year);
 
         return new ApiResponse<>(
-            HttpStatus.OK.value(),
+            HTTP_OK,
             new Payload<>(stocksDataProvider.getHolidaySchedule(year))
         );
+    }
+
+    private String normalizeStockSymbol(String stockSymbol) {
+        if (!StringUtils.hasText(stockSymbol)) {
+            throw new IllegalArgumentException("stockSymbol must not be blank.");
+        }
+
+        String normalizedStockSymbol = stockSymbol.strip().toUpperCase(Locale.ROOT);
+        if (!STOCK_SYMBOL_PATTERN.matcher(normalizedStockSymbol).matches()) {
+            throw new IllegalArgumentException("stockSymbol format is invalid.");
+        }
+
+        return normalizedStockSymbol;
+    }
+
+    private void validateHistoricalDate(LocalDate date) {
+        if (date == null) {
+            throw new IllegalArgumentException("date must not be null.");
+        }
+        if (date.isBefore(MIN_HISTORY_DATE)) {
+            throw new IllegalArgumentException("date must not be earlier than 1900-01-01.");
+        }
+        if (date.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("date must not be in the future.");
+        }
+    }
+
+    private void validateMonthOfYear(int monthOfYear) {
+        int year = monthOfYear / 100;
+        int month = monthOfYear % 100;
+        if (year < MIN_QUERY_YEAR || year > MAX_QUERY_YEAR || month < 1 || month > 12) {
+            throw new IllegalArgumentException("monthOfYear must be in yyyyMM format and within 190001-210012.");
+        }
+    }
+
+    private void validateYear(int year) {
+        if (year < MIN_QUERY_YEAR || year > MAX_QUERY_YEAR) {
+            throw new IllegalArgumentException("year must be within 1900-2100.");
+        }
     }
 }

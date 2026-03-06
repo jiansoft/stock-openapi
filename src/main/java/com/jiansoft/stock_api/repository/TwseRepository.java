@@ -36,14 +36,14 @@ public class TwseRepository {
      */
     public PageResult<TaiexDto> findTaiex(PaginationRequest paginationRequest) {
         var params = new MapSqlParameterSource("category", TAIEX_CATEGORY);
-        Long totalRecords = jdbcTemplate.queryForObject("""
+        long totalRecords = queryForCount("""
             select count(*)
             from "index"
             where category = :category
-            """, params, Long.class);
+            """, params);
 
-        Meta meta = Meta.from(totalRecords == null ? 0L : totalRecords, paginationRequest);
-        if (totalRecords == null || totalRecords == 0) {
+        Meta meta = Meta.from(totalRecords, paginationRequest);
+        if (totalRecords == 0) {
             return new PageResult<>(meta, List.of());
         }
 
@@ -110,5 +110,10 @@ public class TwseRepository {
     private LocalDate toLocalDate(ResultSet resultSet, String columnName) throws SQLException {
         Date value = resultSet.getDate(columnName);
         return value == null ? null : value.toLocalDate();
+    }
+
+    private long queryForCount(String sql, MapSqlParameterSource params) {
+        Long totalRecords = jdbcTemplate.queryForObject(sql, params, Long.class);
+        return totalRecords == null ? 0L : totalRecords;
     }
 }

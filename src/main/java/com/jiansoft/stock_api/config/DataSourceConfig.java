@@ -73,8 +73,8 @@ public class DataSourceConfig {
     }
 
     private Map<String, String> parseConnectionString(String connection) {
-        Map<String, String> tokens = new LinkedHashMap<>();
         String[] segments = connection.split(";");
+        LinkedHashMap<String, String> tokens = LinkedHashMap.newLinkedHashMap(segments.length);
 
         for (String segment : segments) {
             if (!StringUtils.hasText(segment)) {
@@ -88,7 +88,7 @@ public class DataSourceConfig {
 
             String key = segment.substring(0, separatorIndex).trim().toLowerCase(Locale.ROOT);
             String value = segment.substring(separatorIndex + 1).trim();
-            tokens.put(key, value);
+            tokens.putLast(key, value);
         }
 
         return tokens;

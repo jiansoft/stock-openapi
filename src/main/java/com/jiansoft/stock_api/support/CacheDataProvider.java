@@ -37,6 +37,9 @@ public class CacheDataProvider implements DataProvider {
         Objects.requireNonNull(key, "key must not be null");
         Objects.requireNonNull(ttl, "ttl must not be null");
         Objects.requireNonNull(factory, "factory must not be null");
+        if (ttl.isZero() || ttl.isNegative()) {
+            throw new IllegalArgumentException("ttl must be greater than zero");
+        }
 
         CachedValue<T> cachedValue = getCachedValue(key);
         if (cachedValue.hit()) {
@@ -78,14 +81,15 @@ public class CacheDataProvider implements DataProvider {
     void cleanupExpiredEntries() {
         Instant now = Instant.now();
 
-        cacheEntries.entrySet().removeIf(entry -> entry.getValue().expiresAt().isBefore(now));
-        locks.entrySet().removeIf(entry -> entry.getValue().expiresAt().isBefore(now));
+        cacheEntries.entrySet().removeIf(entry -> isExpired(entry.getValue().expiresAt(), now));
+        locks.entrySet().removeIf(entry -> isExpired(entry.getValue().expiresAt(), now));
     }
 
     private ReentrantLock getLockForKey(String key, Duration ttl) {
-        Instant expiresAt = Instant.now().plus(ttl);
+        Instant now = Instant.now();
+        Instant expiresAt = now.plus(ttl);
         LockInfo lockInfo = locks.compute(key, (ignored, existing) -> {
-            if (existing == null || existing.expiresAt().isBefore(Instant.now())) {
+            if (existing == null || isExpired(existing.expiresAt(), now)) {
                 return new LockInfo(new ReentrantLock(), expiresAt);
             }
 
@@ -102,7 +106,8 @@ public class CacheDataProvider implements DataProvider {
             return new CachedValue<>(false, null);
         }
 
-        if (cacheEntry.expiresAt().isBefore(Instant.now())) {
+        Instant now = Instant.now();
+        if (isExpired(cacheEntry.expiresAt(), now)) {
             cacheEntries.remove(key, cacheEntry);
             return new CachedValue<>(false, null);
         }
@@ -116,7 +121,12 @@ public class CacheDataProvider implements DataProvider {
 
     private <T> void putValue(String key, T value, Duration ttl) {
         Object cacheValue = value == null ? NULL_VALUE : value;
-        cacheEntries.put(key, new CacheEntry(cacheValue, Instant.now().plus(ttl)));
+        Instant now = Instant.now();
+        cacheEntries.put(key, new CacheEntry(cacheValue, now.plus(ttl)));
+    }
+
+    private boolean isExpired(Instant expiresAt, Instant now) {
+        return !expiresAt.isAfter(now);
     }
 
     private record CacheEntry(Object value, Instant expiresAt) {
