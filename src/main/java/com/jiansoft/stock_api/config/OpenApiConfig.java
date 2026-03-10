@@ -3,6 +3,8 @@ package com.jiansoft.stock_api.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.servers.Server;
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,6 +25,9 @@ public class OpenApiConfig {
     @Bean
     public OpenAPI stockApiOpenAPI() {
         return new OpenAPI()
+            // Use a relative server URL so Swagger UI keeps the current scheme/host
+            // instead of inferring an absolute http URL from reverse-proxy headers.
+            .servers(List.of(new Server().url("/")))
             .info(new Info()
                 .title("股票資訊服務")
                 .description("本平臺提供歷年台股資訊服務，歡迎各位介接使用。")

@@ -150,7 +150,7 @@ public class StockRepository {
             select count(*)
             from stock_exchange_market sem
             inner join stocks s on s.stock_exchange_market_id = sem.stock_exchange_market_id
-            inner join last_daily_quotes ldq on s.stock_symbol = ldq.security_code
+            inner join last_daily_quotes ldq on s.stock_symbol = ldq.stock_symbol
             where s."SuspendListing" = false
             """, new MapSqlParameterSource());
 
@@ -190,7 +190,7 @@ public class StockRepository {
                 ldq."price-to-book_ratio" as price_to_book_ratio
             from stock_exchange_market sem
             inner join stocks s on s.stock_exchange_market_id = sem.stock_exchange_market_id
-            inner join last_daily_quotes ldq on s.stock_symbol = ldq.security_code
+            inner join last_daily_quotes ldq on s.stock_symbol = ldq.stock_symbol
             where s."SuspendListing" = false
             order by s.stock_symbol
             offset :offset limit :limit
